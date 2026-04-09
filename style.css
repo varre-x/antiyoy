@@ -1,3 +1,9 @@
+
+body {
+    background-color: gray;
+    margin: 10px;
+}
+
 #container {
     position: relative;
 }
@@ -6,4 +12,19 @@
     position: absolute;
     width: 60px;
     height: 60px;
+}
+
+.tree  {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+}
+
+/* toggle classes */
+.invisible {
+    visibility: collapse;
+}
+
+.visible {
+    visibility: visible;
 }
