@@ -1,7 +1,10 @@
 const container = document.getElementById("container");
 const lobby = document.getElementById("lobby");
+const startDiv = document.getElementById("startDiv");
+const playerList = document.getElementById("playerList");
 const nameField = document.getElementById("nameField");
 const joinBtn = document.getElementById("joinBtn");
+const startBtn = document.getElementById("startBtn");
 
 async function fetchData() {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
@@ -9,6 +12,19 @@ async function fetchData() {
     });
     return await response.json();
 }
+
+async function postData(data) {
+    const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+    console.log(response);
+    return await response.json();
+}
+
 
 async function loadHexMap() {
     const data = await fetchData();
@@ -40,18 +56,35 @@ console.log(data);
     return;
 };
 
-async function startGame() {
+async function mm(){
     const data = await fetchData();
-}   
+    data.players.add("Nelson");
+    data.current_player = "Nelson";
 
-startGame();
+}
+
+
 //setInterval(loadHexMap, 2000);
 
 loadHexMap();
 
 joinBtn.addEventListener("click", () => {
     const playerName = nameField.value.trim();
+    const data = fetchData();
     if (playerName !== "") {
         lobby.classList.toggle("invisible");
+        startDiv.classList.toggle("invisible");
+        postData({
+            "action": "join",
+            "username": playerName
+        });
     }
+});
+
+startBtn.addEventListener("click", () => {
+    startDiv.classList.toggle("invisible");
+    postData({
+        "action": "start"
+    });
+    loadHexMap();
 });
