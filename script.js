@@ -118,3 +118,40 @@ endTurnBtn.addEventListener("click", () => {
     });
     loadHexMap();
 });
+
+//unit and building buttons
+let selectedAction = null;
+
+farm.onclick = () => selectedTool = "farm";
+tower.onclick = () => selectedTool = "tower";
+fortress.onclick = () => selectedTool = "fortress";
+peasant.onclick = () => selectedAction = "peasant";
+spearman.onclick = () => selectedAction = "spearman";
+baron.onclick = () => selectedAction = "baron";
+knight.onclick = () => selectedAction = "knight";
+
+//chatgpt
+let selectedTool = null;
+
+document.body.addEventListener("click", async (e) => {
+    const hex = e.target.closest(".hex");
+    if (!hex) return;
+
+    if (!selectedTool) return;
+
+    const col = Number(hex.dataset.col);
+    const row = Number(hex.dataset.row);
+
+    await postData({
+        action: "build",
+        player_key: playerKey,
+        type: selectedTool,
+        hex: {
+            col,
+            row
+        }
+    });
+
+    selectedTool = null;
+    loadHexMap();
+});
