@@ -5,6 +5,18 @@ const playerList = document.getElementById("playerList");
 const nameField = document.getElementById("nameField");
 const joinBtn = document.getElementById("joinBtn");
 const startBtn = document.getElementById("startBtn");
+const endTurnBtn = document.getElementById("endTurnBtn");
+
+//units and buildings
+const farm = document.getElementById("farm");
+const tower = document.getElementById("tower");
+const fortress = document.getElementById("fortress");
+const peasant = document.getElementById("peasant");
+const spearman = document.getElementById("spearman");
+const baron = document.getElementById("baron");
+const knight = document.getElementById("knight");
+
+let playerKey = "";
 
 async function fetchData() {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
@@ -21,15 +33,16 @@ async function postData(data) {
         },
         body: JSON.stringify(data)
     });
-    console.log(response);
-    return await response.json();
+    const result = await response.json();
+    
+    return result;
 }
 
 
 async function loadHexMap() {
     const data = await fetchData();
     container.innerHTML = "";
-console.log(data);
+    console.log(data);
     const tiles = data.map
 
     for (const tile of tiles) {
@@ -63,28 +76,45 @@ async function mm(){
 
 }
 
-
 //setInterval(loadHexMap, 2000);
 
 loadHexMap();
 
-joinBtn.addEventListener("click", () => {
+joinBtn.addEventListener("click", async () => {
     const playerName = nameField.value.trim();
-    const data = fetchData();
+    const data = await fetchData();
     if (playerName !== "") {
         lobby.classList.toggle("invisible");
         startDiv.classList.toggle("invisible");
-        postData({
+        const joinResponse = await postData({
             "action": "join",
             "username": playerName
         });
+        playerKey = joinResponse.player_key;
+        //console.log(playerKey);
     }
 });
 
-startBtn.addEventListener("click", () => {
+startBtn.addEventListener("click", async () => {
     startDiv.classList.toggle("invisible");
-    postData({
+    endTurnBtn.classList.toggle("invisible");
+    farm.classList.toggle("invisible");
+    tower.classList.toggle("invisible");
+    fortress.classList.toggle("invisible");
+    peasant.classList.toggle("invisible");
+    spearman.classList.toggle("invisible");
+    baron.classList.toggle("invisible");
+    knight.classList.toggle("invisible");
+    await postData({
         "action": "start"
+    });
+    loadHexMap();
+});
+
+endTurnBtn.addEventListener("click", () => {
+    postData({
+        "action": "end_turn",
+        "player_key": playerKey
     });
     loadHexMap();
 });
