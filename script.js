@@ -6,15 +6,8 @@ const nameField = document.getElementById("nameField");
 const joinBtn = document.getElementById("joinBtn");
 const startBtn = document.getElementById("startBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
-
 //units and buildings
-const farm = document.getElementById("farm");
-const tower = document.getElementById("tower");
-const fortress = document.getElementById("fortress");
-const peasant = document.getElementById("peasant");
-const spearman = document.getElementById("spearman");
-const baron = document.getElementById("baron");
-const knight = document.getElementById("knight");
+const ubBtns = document.getElementsByClassName("ubBtn");
 
 let playerKey = "6mfDmaq5Qhb2XJo0xcGShSJutmAIv-m9afLiGADbuEQ";
 
@@ -42,7 +35,7 @@ async function postData(data) {
 async function loadHexMap() {
     const data = await fetchData();
     container.innerHTML = "";
-    console.log(data);
+    //console.log(data);
     const tiles = data.map
 
     for (const tile of tiles) {
@@ -94,6 +87,7 @@ async function loadHexMap() {
 
 loadHexMap();
 
+//lobby buttons
 joinBtn.addEventListener("click", async () => {
     const playerName = nameField.value.trim();
     const data = await fetchData();
@@ -112,19 +106,16 @@ joinBtn.addEventListener("click", async () => {
 startBtn.addEventListener("click", async () => {
     startDiv.classList.toggle("collapse");
     endTurnBtn.classList.toggle("collapse");
-    farm.classList.toggle("collapse");
-    tower.classList.toggle("collapse");
-    fortress.classList.toggle("collapse");
-    peasant.classList.toggle("collapse");
-    spearman.classList.toggle("collapse");
-    baron.classList.toggle("collapse");
-    knight.classList.toggle("collapse");
+    for (const btn of ubBtns) {
+        btn.classList.toggle("collapse");
+    }
     await postData({
         "action": "start"
     });
     loadHexMap();
 });
 
+//ingame buttons
 endTurnBtn.addEventListener("click", () => {
     postData({
         "action": "end_turn",
@@ -133,19 +124,17 @@ endTurnBtn.addEventListener("click", () => {
     loadHexMap();
 });
 
-//unit and building buttons
-let selectedAction = null;
-
-farm.onclick = () => selectedTool = "farm";
-tower.onclick = () => selectedTool = "tower";
-fortress.onclick = () => selectedTool = "fortress";
-peasant.onclick = () => selectedAction = "peasant";
-spearman.onclick = () => selectedAction = "spearman";
-baron.onclick = () => selectedAction = "baron";
-knight.onclick = () => selectedAction = "knight";
-
-//--------------------------------------------------------------------------
 let selectedTool = null;
+
+for (const btn of ubBtns) {
+    btn.onclick = () => {
+        selectedTool = btn.dataset.tool;
+        for (const b of ubBtns) {
+            b.classList.remove("selected");
+        }
+        btn.classList.add("selected");
+    };
+};
 
 document.body.addEventListener("click", async (e) => {
     const hex = e.target.closest(".hex");
@@ -155,15 +144,16 @@ document.body.addEventListener("click", async (e) => {
 
     const col = Number(hex.dataset.col);
     const row = Number(hex.dataset.row);
-    console.log(`Clicked hex at col ${col}, row ${row} with ${selectedTool}`);
 
-    console.log(await postData({
+    await postData({
         "action": "buy",
         "player_key": playerKey,
         "type": selectedTool,
         "hex": {"col": col, "row": row}
-    }));
-
+    });
+    for (const btn of ubBtns) {
+        btn.classList.remove("selected");
+    }
     selectedTool = null;
     loadHexMap();
 });
@@ -172,13 +162,9 @@ document.body.addEventListener("click", async (e) => {
 //for testing
     startDiv.classList.toggle("collapse");
     endTurnBtn.classList.toggle("collapse");
-    farm.classList.toggle("collapse");
-    tower.classList.toggle("collapse");
-    fortress.classList.toggle("collapse");
-    peasant.classList.toggle("collapse");
-    spearman.classList.toggle("collapse");
-    baron.classList.toggle("collapse");
-    knight.classList.toggle("collapse");
+    for (const btn of ubBtns) {
+        btn.classList.toggle("collapse");
+    }
 
 async function mm(){
     const data = await fetchData();
