@@ -6,7 +6,7 @@ body {
 
 #container {
     position: relative;
-    top: 100px;
+    top: 110px;
 }
 
 .hex, .building, .tree, .unit {
@@ -17,6 +17,48 @@ body {
 
 .tree{
     pointer-events: none;
+}
+
+/*Money*/
+#moneyDiv {
+    background-color: darkgrey;
+    position: fixed;
+    padding: 10px;
+    padding-bottom: 0px;
+    border-radius: 20px;
+    border: 2px solid black;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
+    text-align: center;
+    display: block;
+}
+
+/*
+#moneyDiv:hover {
+    border-color: yellow;
+    background-color: lightgrey;
+}
+*/
+
+#moneyDiv span, img {
+    display: inline-block;
+    vertical-align: middle;
+    height: 40px;
+    width: fit-content;
+}
+
+#moneyDiv img {
+    width: 40px;
+}
+
+#money{
+    font-size: 30px;
+}
+
+#income {
+    margin-top: 0px;
+    font-size: 15px;
 }
 
 /*z indexes*/
@@ -30,10 +72,11 @@ body {
 /*game button and div styles*/
 #gameBtns {
     display: inline-flex;
-    width: 500px;
+    width: fit-content;
     margin-top: 10px;
     margin-bottom: 10px;
     position: fixed;
+    top: 95px;
     left: 50%;
     transform: translateX(-50%);
 }

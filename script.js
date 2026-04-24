@@ -6,10 +6,12 @@ const nameField = document.getElementById("nameField");
 const joinBtn = document.getElementById("joinBtn");
 const startBtn = document.getElementById("startBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
-//units and buildings
+//unit and building buttons
 const ubBtns = document.getElementsByClassName("ubBtn");
+const moneyDiv = document.getElementById("moneyDiv");
 
 let playerKey = "6mfDmaq5Qhb2XJo0xcGShSJutmAIv-m9afLiGADbuEQ";
+let username = "ss";
 
 async function fetchData() {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
@@ -83,9 +85,17 @@ async function loadHexMap() {
     return;
 };
 
+async function loadMoney() {
+    const data = await fetchData();
+    let playerData = data.players;
+    for (const player of playerData) {
+        if (player.username === username) {
+            document.getElementById("money").textContent = `${player.money}`;
+            document.getElementById("income").textContent = `${player.income}/turn`;
+        };
+    };
+};
 //setInterval(loadHexMap, 2000);
-
-loadHexMap();
 
 //lobby buttons
 joinBtn.addEventListener("click", async () => {
@@ -109,9 +119,11 @@ startBtn.addEventListener("click", async () => {
     for (const btn of ubBtns) {
         btn.classList.toggle("collapse");
     }
+    moneyDiv.classList.toggle("collapse");
     await postData({
         "action": "start"
     });
+    loadMoney();
     loadHexMap();
 });
 
@@ -121,6 +133,7 @@ endTurnBtn.addEventListener("click", () => {
         "action": "end_turn",
         "player_key": playerKey
     });
+    loadMoney();
     loadHexMap();
 });
 
@@ -145,29 +158,34 @@ document.body.addEventListener("click", async (e) => {
     const col = Number(hex.dataset.col);
     const row = Number(hex.dataset.row);
 
-    await postData({
+    console.log(await postData({
         "action": "buy",
         "player_key": playerKey,
         "type": selectedTool,
         "hex": {"col": col, "row": row}
-    });
+    }));
     for (const btn of ubBtns) {
         btn.classList.remove("selected");
     }
     selectedTool = null;
+    loadMoney();
     loadHexMap();
 });
 
 
 //for testing
-    startDiv.classList.toggle("collapse");
-    endTurnBtn.classList.toggle("collapse");
-    for (const btn of ubBtns) {
-        btn.classList.toggle("collapse");
-    }
+loadMoney();
+loadHexMap();
+
+startDiv.classList.toggle("collapse");
+endTurnBtn.classList.toggle("collapse");
+for (const btn of ubBtns) {
+    btn.classList.toggle("collapse");
+}
+moneyDiv.classList.toggle("collapse");
 
 async function mm(){
     const data = await fetchData();
     data.players.add("Nelson");
     data.current_player = "Nelson";
-}
+};
