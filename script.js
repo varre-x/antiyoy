@@ -16,7 +16,7 @@ const spearman = document.getElementById("spearman");
 const baron = document.getElementById("baron");
 const knight = document.getElementById("knight");
 
-let playerKey = "";
+let playerKey = "6mfDmaq5Qhb2XJo0xcGShSJutmAIv-m9afLiGADbuEQ";
 
 async function fetchData() {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
@@ -52,24 +52,37 @@ async function loadHexMap() {
             hex.classList.add("hex");
             hex.style.left = `${tile.x}px`;
             hex.style.top = `${tile.y}px`;
+            hex.dataset.col = tile.col;
+            hex.dataset.row = tile.row;
             container.appendChild(hex);
 
             if (tile.building === "tree") {
                 const tree = document.createElement("img");
-                tree.src = `https://tinkr.tech/sdb_apps/antiyoy/images/tree.svg`;
+                tree.src = `https://tinkr.tech/sdb_apps/antiyoy/images/${tile.building}.svg`;
                 tree.classList.add("tree");
                 tree.style.left = `${tile.x}px`;
                 tree.style.top = `${tile.y}px`;
+                tree.dataset.col = tile.col;
+                tree.dataset.row = tile.row;
                 container.appendChild(tree);    
-            } 
-            
+            } else if (tile.building !== null) {
+                const building = document.createElement("img");
+                building.src = `https://tinkr.tech/sdb_apps/antiyoy/images/building_${tile.building}.svg`;
+                building.classList.add("building");
+                building.style.left = `${tile.x}px`;
+                building.style.top = `${tile.y}px`;
+                building.dataset.col = tile.col;
+                building.dataset.row = tile.row;
+                container.appendChild(building);
+            }
+
             if (tile.unit !== null) {
                 const unit = document.createElement("img");
                 unit.src = `https://tinkr.tech/sdb_apps/antiyoy/images/unit_${tile.unit}.svg`;
-                unit.classList.add(tile.unit);
+                unit.classList.add("unit");
                 unit.style.left = `${tile.x}px`;
                 unit.style.top = `${tile.y}px`;
-                container.appendChild(unit);    
+                container.appendChild(unit);
             }
         }
         
@@ -92,7 +105,7 @@ joinBtn.addEventListener("click", async () => {
             "username": playerName
         });
         playerKey = joinResponse.player_key;
-        //console.log(playerKey);
+        console.log(playerKey);
     }
 });
 
@@ -142,17 +155,14 @@ document.body.addEventListener("click", async (e) => {
 
     const col = Number(hex.dataset.col);
     const row = Number(hex.dataset.row);
-    console.log(`Clicked hex at col ${col}, row ${row} with tool ${selectedTool}`);
+    console.log(`Clicked hex at col ${col}, row ${row} with ${selectedTool}`);
 
-    await postData({
-        action: "build",
-        player_key: playerKey,
-        type: selectedTool,
-        hex: {
-            col,
-            row
-        }
-    });
+    console.log(await postData({
+        "action": "buy",
+        "player_key": playerKey,
+        "type": selectedTool,
+        "hex": {"col": col, "row": row}
+    }));
 
     selectedTool = null;
     loadHexMap();

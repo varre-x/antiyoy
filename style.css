@@ -8,16 +8,81 @@ body {
     position: relative;
 }
 
-.hex {
+.hex, .building, .tree, .unit {
     position: absolute;
     width: 60px;
     height: 60px;
 }
 
-.tree  {
-    position: absolute;
+/*button styles*/
+.button {
+    display: inline-flex;
     width: 60px;
-    height: 60px;
+    height: 80px;
+    border: none;
+    cursor: pointer;
+    padding: 0px;
+    margin: 1px;
+    justify-content: center;
+    background-color: darkgray;
+    border-radius: 20px;
+}
+
+.button span, .button img {
+    align-self: self-end;
+    width: 23px;
+    height: 23px;
+    font-size: large;
+}
+
+
+#farm {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/building_farm.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#tower {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/building_tower.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#fortress {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/building_fortress.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#peasant {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/unit_peasant.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#spearman {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/unit_spearman.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#baron {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/unit_baron.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
+}
+
+#knight {
+    background-image: url("https://tinkr.tech/sdb_apps/antiyoy/images/unit_knight.svg");
+    background-size: 60px 60px;
+    background-position: top;
+    background-repeat: no-repeat;
 }
 
 /* toggle classes */
@@ -29,4 +94,12 @@ body {
 .visible {
     visibility: visible;
     display: block;
+}
+
+/*z indexes*/
+.hex {
+    z-index: 0;
+}
+.tree, .building, .unit {
+    z-index: 1;
 }
