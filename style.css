@@ -15,7 +15,7 @@ body {
     height: 60px;
 }
 
-.tree{
+.tree, .unit{
     pointer-events: none;
 }
 

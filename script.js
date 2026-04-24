@@ -36,8 +36,8 @@ async function postData(data) {
 
 async function loadHexMap() {
     const data = await fetchData();
+    console.log(data);
     container.innerHTML = "";
-    //console.log(data);
     const tiles = data.map
 
     for (const tile of tiles) {
@@ -91,7 +91,8 @@ async function loadMoney() {
     for (const player of playerData) {
         if (player.username === username) {
             document.getElementById("money").textContent = `${player.money}`;
-            document.getElementById("income").textContent = `${player.income}/turn`;
+            let income = player.income - player.upkeep;
+            document.getElementById("income").textContent = `${income}/turn`;
         };
     };
 };
@@ -149,27 +150,58 @@ for (const btn of ubBtns) {
     };
 };
 
+
+let fromCol = null;
+let fromRow = null;
+
 document.body.addEventListener("click", async (e) => {
     const hex = e.target.closest(".hex");
     if (!hex) return;
+    if (selectedTool === null) {
+        if (fromCol === null && fromRow === null) {
+            const col = Number(hex.dataset.col);
+            const row = Number(hex.dataset.row);
 
-    if (!selectedTool) return;
-
-    const col = Number(hex.dataset.col);
-    const row = Number(hex.dataset.row);
-
-    console.log(await postData({
-        "action": "buy",
-        "player_key": playerKey,
-        "type": selectedTool,
-        "hex": {"col": col, "row": row}
-    }));
-    for (const btn of ubBtns) {
-        btn.classList.remove("selected");
-    }
-    selectedTool = null;
-    loadMoney();
-    loadHexMap();
+            const data = await fetchData();
+            const tiles = data.map;
+            for (const tile of tiles) {
+                if (tile.col === col && tile.row === row && tile.unit !== null) {
+                    fromCol = col;
+                    fromRow = row;
+                    return;
+                }
+            }
+            return;
+        } else if (fromCol !== null && fromRow !== null) {
+            const toCol = Number(hex.dataset.col);
+            const toRow = Number(hex.dataset.row);
+            await postData({
+                "action": "move",
+                "player_key": playerKey,
+                "from": {"col": fromCol, "row": fromRow},
+                "to": {"col": toCol, "row": toRow}
+            });
+            loadHexMap();
+            fromCol = null;
+            fromRow = null;
+            return;
+        };
+    } else {
+        const col = Number(hex.dataset.col);
+        const row = Number(hex.dataset.row);
+        console.log(await postData({
+            "action": "buy",
+            "player_key": playerKey,
+            "type": selectedTool,
+            "hex": {"col": col, "row": row}
+        }));
+        for (const btn of ubBtns) {
+            btn.classList.remove("selected");
+        }
+        selectedTool = null;    
+        loadMoney();
+        loadHexMap();
+    };
 });
 
 
@@ -182,10 +214,4 @@ endTurnBtn.classList.toggle("collapse");
 for (const btn of ubBtns) {
     btn.classList.toggle("collapse");
 }
-moneyDiv.classList.toggle("collapse");
-
-async function mm(){
-    const data = await fetchData();
-    data.players.add("Nelson");
-    data.current_player = "Nelson";
-};
+moneyDiv.classList.toggle("collapse");   
