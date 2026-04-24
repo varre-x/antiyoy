@@ -21,10 +21,12 @@ body {
 }
 
 /* toggle classes */
-.invisible {
+.collapse {
     visibility: collapse;
+    display: none;
 }
 
 .visible {
     visibility: visible;
+    display: block;
 }

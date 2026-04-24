@@ -52,29 +52,30 @@ async function loadHexMap() {
             hex.classList.add("hex");
             hex.style.left = `${tile.x}px`;
             hex.style.top = `${tile.y}px`;
-
             container.appendChild(hex);
 
             if (tile.building === "tree") {
                 const tree = document.createElement("img");
-                tree.src = `https://tinkr.tech//sdb_apps/antiyoy/images/tree.svg`;
+                tree.src = `https://tinkr.tech/sdb_apps/antiyoy/images/tree.svg`;
                 tree.classList.add("tree");
                 tree.style.left = `${tile.x}px`;
                 tree.style.top = `${tile.y}px`;
                 container.appendChild(tree);    
             } 
+            
+            if (tile.unit !== null) {
+                const unit = document.createElement("img");
+                unit.src = `https://tinkr.tech/sdb_apps/antiyoy/images/unit_${tile.unit}.svg`;
+                unit.classList.add(tile.unit);
+                unit.style.left = `${tile.x}px`;
+                unit.style.top = `${tile.y}px`;
+                container.appendChild(unit);    
+            }
         }
         
     }
     return;
 };
-
-async function mm(){
-    const data = await fetchData();
-    data.players.add("Nelson");
-    data.current_player = "Nelson";
-
-}
 
 //setInterval(loadHexMap, 2000);
 
@@ -84,8 +85,8 @@ joinBtn.addEventListener("click", async () => {
     const playerName = nameField.value.trim();
     const data = await fetchData();
     if (playerName !== "") {
-        lobby.classList.toggle("invisible");
-        startDiv.classList.toggle("invisible");
+        lobby.classList.toggle("collapse");
+        startDiv.classList.toggle("collapse");
         const joinResponse = await postData({
             "action": "join",
             "username": playerName
@@ -96,15 +97,15 @@ joinBtn.addEventListener("click", async () => {
 });
 
 startBtn.addEventListener("click", async () => {
-    startDiv.classList.toggle("invisible");
-    endTurnBtn.classList.toggle("invisible");
-    farm.classList.toggle("invisible");
-    tower.classList.toggle("invisible");
-    fortress.classList.toggle("invisible");
-    peasant.classList.toggle("invisible");
-    spearman.classList.toggle("invisible");
-    baron.classList.toggle("invisible");
-    knight.classList.toggle("invisible");
+    startDiv.classList.toggle("collapse");
+    endTurnBtn.classList.toggle("collapse");
+    farm.classList.toggle("collapse");
+    tower.classList.toggle("collapse");
+    fortress.classList.toggle("collapse");
+    peasant.classList.toggle("collapse");
+    spearman.classList.toggle("collapse");
+    baron.classList.toggle("collapse");
+    knight.classList.toggle("collapse");
     await postData({
         "action": "start"
     });
@@ -130,7 +131,7 @@ spearman.onclick = () => selectedAction = "spearman";
 baron.onclick = () => selectedAction = "baron";
 knight.onclick = () => selectedAction = "knight";
 
-//chatgpt
+//--------------------------------------------------------------------------
 let selectedTool = null;
 
 document.body.addEventListener("click", async (e) => {
@@ -141,6 +142,7 @@ document.body.addEventListener("click", async (e) => {
 
     const col = Number(hex.dataset.col);
     const row = Number(hex.dataset.row);
+    console.log(`Clicked hex at col ${col}, row ${row} with tool ${selectedTool}`);
 
     await postData({
         action: "build",
@@ -155,3 +157,21 @@ document.body.addEventListener("click", async (e) => {
     selectedTool = null;
     loadHexMap();
 });
+
+
+//for testing
+    startDiv.classList.toggle("collapse");
+    endTurnBtn.classList.toggle("collapse");
+    farm.classList.toggle("collapse");
+    tower.classList.toggle("collapse");
+    fortress.classList.toggle("collapse");
+    peasant.classList.toggle("collapse");
+    spearman.classList.toggle("collapse");
+    baron.classList.toggle("collapse");
+    knight.classList.toggle("collapse");
+
+async function mm(){
+    const data = await fetchData();
+    data.players.add("Nelson");
+    data.current_player = "Nelson";
+}
