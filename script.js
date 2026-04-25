@@ -14,11 +14,15 @@ const resumeBtn = document.getElementById("resumeBtn");
 //unit and building buttons
 const ubBtns = document.getElementsByClassName("ubBtn");
 
+let playerKey = null;
+let username = null;
+
 let selectedTool = null;
 let fromCol = null;
 let fromRow = null;
 let errorText = null;
 
+loadPlayerListInterval = setInterval(loadPlayerList, 2000);
 const keyMap = {
     "1": "farm",
     "2": "tower",
@@ -54,11 +58,11 @@ async function fetchData() {
     return await response.json();
 }
 
-async function postData(data) {
+async function postData(datay) {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
+        body: JSON.stringify(datay)
     });
     const result = await response.json();
     
@@ -129,7 +133,7 @@ async function loadMoney() {
 };
 
 async function loadPlayerList() {
-    playerList.innerHTML = null;
+    playerList.innerHTML = "";
     const data = await fetchData();
     const players = data.players;
     for (const player of players) {
@@ -167,7 +171,6 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
     username = localStorage.getItem("username");
     lobby.classList.toggle("collapse");
     startDiv.classList.toggle("collapse");
-    loadPlayerListInterval = setInterval(loadPlayerList, 2000);
     loadPlayerList();
 
     fetchData().then(data => { 
@@ -184,10 +187,8 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
             loadMoneyInterval = setInterval(loadMoney, 2000);
         };
     });
-} else {
-    let playerKey = null;
-    let username = null;
 };
+
 
 //lobby buttons
 joinBtn.addEventListener("click", async (e) => {
@@ -205,7 +206,6 @@ joinBtn.addEventListener("click", async (e) => {
             errorText = null;
             return;
         } else {
-            playerListInterval = setInterval(loadPlayerList, 2000);
             loadPlayerList();
             lobby.classList.toggle("collapse");
             startDiv.classList.toggle("collapse");
@@ -213,6 +213,7 @@ joinBtn.addEventListener("click", async (e) => {
         localStorage.setItem("playerKey", joinResponse.player_key);
         localStorage.setItem("username", playerName);
         playerKey = joinResponse.player_key;
+        username = playerName;
     }
 });
 
@@ -236,7 +237,6 @@ startBtn.addEventListener("click", async (e) => {
     loadHexMap();
     loadHexMapInterval = setInterval(loadHexMap, 2000);
     loadMoneyInterval = setInterval(loadMoney, 2000);
-    clearInterval(playerListInterval);
 });
 
 //ingame buttons
@@ -394,3 +394,7 @@ loadHexMap();
 loadMoney(); */
 /* localStorage.clear();
 location.reload(); */
+
+/* console.log(localStorage.getItem("playerKey"));
+console.log(localStorage.getItem("username")); */
+
