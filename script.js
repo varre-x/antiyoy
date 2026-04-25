@@ -50,6 +50,8 @@ TO DO:
 - click numbers to select farm, fortress or units insead of clicking the image ✅
 - green border on moneyDiv when its your turn
 - income animations above farms when you get income
+- visuals for end turn
+- visuals for unit movement
 */
 
 async function fetchData() {
@@ -72,7 +74,7 @@ async function postData(data) {
 
 async function loadHexMap() {
     const data = await fetchData();
-    /* console.log(data); */
+    console.log(data);
     container.innerHTML = "";
     const tiles = data.map
 
@@ -249,7 +251,7 @@ startBtn.addEventListener("click", async (e) => {
     }
     loadMoney();
     loadHexMap();
-    container.classList.toggle("collapse");
+    container.classList.remove("collapse");
     loadHexMapInterval = setInterval(loadHexMap, 2000);
     loadMoneyInterval = setInterval(loadMoney, 2000);
 });
@@ -394,31 +396,14 @@ ffBtn.addEventListener("click", async (e) => {
 async function winHandler() {
     const data = await fetchData();
     if (data.phase === "lobby") {
-        lobby.classList.remove("collapse");
-        moneyDiv.classList.add("collapse");
-        ubBtns.classList.add("collapse");
         container.classList.add("collapse");
         localStorage.clear();
-        location.reload();
-        return "ok";
-    } else {
-        return "no";
+        location.reload;
     }
-
 };
 
 //win handling
-fetchData().then(data => {
-    if (data.phase === "playing") {
-        winInterval = setInterval(winHandler(), 2000)
-        if (winHandler().catch === "ok") {
-            clearInterval(winInterval);
-        }
-    }
-});
-
-
-
+setInterval(winHandler(), 2000)
 
 //for testing
 /* lobby.classList.toggle("collapse");
