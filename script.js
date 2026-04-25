@@ -7,14 +7,17 @@ const joinBtn = document.getElementById("joinBtn");
 const startBtn = document.getElementById("startBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
 const moneyDiv = document.getElementById("moneyDiv");
+//menu
+const menu = document.getElementById("menu");
+const ffBtn = document.getElementById("ffBtn");
+const resumeBtn = document.getElementById("resumeBtn");
 //unit and building buttons
 const ubBtns = document.getElementsByClassName("ubBtn");
 
-let playerKey = "6mfDmaq5Qhb2XJo0xcGShSJutmAIv-m9afLiGADbuEQ";
-let username = "ss";
 let selectedTool = null;
 let fromCol = null;
 let fromRow = null;
+let errorText = null;
 
 const keyMap = {
     "1": "farm",
@@ -27,18 +30,21 @@ const keyMap = {
 };
 
 
+
 /*
 TO DO:
-- add player list to lobby ✅
+- add player list to lobby ✅ -- bug- when you join you can see other players
 - save playerkey and name to localstorage
 - add surrender button
 - win comditions
 - scaling price for farms
-- highlight hexes that unit can move to
+- highlight hexes that unit can move to?
 - hightlight which color you are?
 - message popups for errors nt: not enough money, not your turn, etc ✅
 - ability to check everyones incomes by clicking on moneyDiv
 - click numbers to select farm, fortress or units insead of clicking the image ✅
+- green border on moneyDiv when its your turn
+- income animations above farms when you get income
 */
 
 async function fetchData() {
@@ -51,9 +57,7 @@ async function fetchData() {
 async function postData(data) {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
     });
     const result = await response.json();
@@ -124,6 +128,19 @@ async function loadMoney() {
     };
 };
 
+async function loadPlayerList() {
+    playerList.innerHTML = null;
+    const data = await fetchData();
+    const players = data.players;
+    for (const player of players) {
+        let playerLi = document.createElement("li");
+        playerLi.textContent = player.username;
+        playerLi.classList.add("playerListItem");
+        playerList.appendChild(playerLi);
+    };
+
+};
+
 function showError(text, x, y) {
     const el = document.createElement("div");
     el.className = "error-popup";
@@ -139,30 +156,63 @@ function showError(text, x, y) {
     }, 1000);
 }
 
-//setInterval(loadHexMap, 2000);
+//capitalize first letter of string
+function cFLetter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+//remember player
+if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
+    playerKey = localStorage.getItem("playerKey");
+    username = localStorage.getItem("username");
+    lobby.classList.toggle("collapse");
+    startDiv.classList.toggle("collapse");
+    loadPlayerListInterval = setInterval(loadPlayerList, 2000);
+    loadPlayerList();
+
+    fetchData().then(data => { 
+        if (data.phase === "playing") {
+            startDiv.classList.toggle("collapse");
+            endTurnBtn.classList.toggle("collapse");
+            for (const btn of ubBtns) {
+                btn.classList.toggle("collapse");
+            };
+            moneyDiv.classList.toggle("collapse");
+            loadHexMap();
+            loadMoney();
+            loadHexMapInterval = setInterval(loadHexMap, 2000);
+            loadMoneyInterval = setInterval(loadMoney, 2000);
+        };
+    });
+} else {
+    let playerKey = null;
+    let username = null;
+};
 
 //lobby buttons
 joinBtn.addEventListener("click", async (e) => {
     const playerName = nameField.value.trim();
     const data = await fetchData();
     if (playerName !== "") {
-        let player = document.createElement("li");
-        player.textContent = playerName;
-        player.classList.add("playerListItem");
-        playerList.appendChild(player);
-        
-        lobby.classList.toggle("collapse");
-        startDiv.classList.toggle("collapse");
         const joinResponse = await postData({
             "action": "join",
             "username": playerName
         });
-        if (!joinResponse.ok) {
-        showError(`${joinResponse.error}`, e.clientX, e.clientY);
-        console.log(joinResponse.error);
+        if (!joinResponse.ok && joinResponse.error !== undefined) {
+            errorText = cFLetter(joinResponse.error.replace(/_/g, " "));
+            showError(`${errorText}`, e.clientX, e.clientY);
+            console.log(joinResponse.error);
+            errorText = null;
+            return;
+        } else {
+            playerListInterval = setInterval(loadPlayerList, 2000);
+            loadPlayerList();
+            lobby.classList.toggle("collapse");
+            startDiv.classList.toggle("collapse");
         };
+        localStorage.setItem("playerKey", joinResponse.player_key);
+        localStorage.setItem("username", playerName);
         playerKey = joinResponse.player_key;
-        console.log(playerKey);
     }
 });
 
@@ -176,12 +226,17 @@ startBtn.addEventListener("click", async (e) => {
     const startResponse = await postData({
         "action": "start"
     });
-    if (!startResponse.ok) {
-        showError(`${startResponse.error}`, e.clientX, e.clientY);
+    if (!startResponse.ok && startResponse.error !== undefined) {
+        errorText = cFLetter(startResponse.error.replace(/_/g, " "));
+        showError(`${errorText}`, e.clientX, e.clientY);
         console.log(startResponse);
+        errorText = null;
     }
     loadMoney();
     loadHexMap();
+    loadHexMapInterval = setInterval(loadHexMap, 2000);
+    loadMoneyInterval = setInterval(loadMoney, 2000);
+    clearInterval(playerListInterval);
 });
 
 //ingame buttons
@@ -190,9 +245,11 @@ endTurnBtn.addEventListener("click", async (e) => {
         "action": "end_turn",
         "player_key": playerKey
     });
-    if (!endTurnResponse.ok) {
-        showError(`${endTurnResponse.error}`, e.clientX, e.clientY);
+    if (!endTurnResponse.ok && endTurnResponse.error !== undefined) {
+        errorText = cFLetter(endTurnResponse.error.replace(/_/g, " "));
+        showError(`${errorText}`, e.clientX, e.clientY);
         console.log(endTurnResponse);
+        errorText = null;
     }
     loadMoney();
     loadHexMap();
@@ -226,7 +283,11 @@ document.addEventListener("keydown", (e) => {
 //hex clicking
 document.body.addEventListener("click", async (e) => {
     const hex = e.target.closest(".hex");
-    if (!hex) return;
+    if (!hex) {
+        fromCol = null;
+        fromRow = null;
+        return;
+    }
     if (selectedTool === null) {
         if (fromCol === null && fromRow === null) {
             const col = Number(hex.dataset.col);
@@ -251,9 +312,11 @@ document.body.addEventListener("click", async (e) => {
                 "from": {"col": fromCol, "row": fromRow},
                 "to": {"col": toCol, "row": toRow}
             });
-            if (!moveUnit.ok) {
-                showError(`${moveUnit.error}`, e.clientX, e.clientY);
+            if (!moveUnit.ok && moveUnit.error !== undefined) {
+                errorText = cFLetter(moveUnit.error.replace(/_/g, " "));
+                showError(`${errorText}`, e.clientX, e.clientY);
                 console.log(moveUnit);
+                errorText = null;
             };
             loadMoney();
             loadHexMap();
@@ -270,9 +333,11 @@ document.body.addEventListener("click", async (e) => {
             "type": selectedTool,
             "hex": {"col": col, "row": row}
         });
-        if (!buyResponse.ok) {
-            showError(`${buyResponse.error}`, e.clientX, e.clientY);
+        if (!buyResponse.ok && buyResponse.error !== undefined) {
+            errorText = cFLetter(buyResponse.error.replace(/_/g, " "));
+            showError(`${errorText}`, e.clientX, e.clientY);
             console.log(buyResponse);
+            errorText = null;
         }
         
         for (const btn of ubBtns) {
@@ -284,11 +349,39 @@ document.body.addEventListener("click", async (e) => {
     };
 });
 
+//menu buttons
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        menu.classList.toggle("collapse");
+    }
+});
+
+resumeBtn.addEventListener("click", () => {
+    menu.classList.toggle("collapse");
+});
+
+ffBtn.addEventListener("click", async (e) => {
+    const ffResponse = await postData({
+        "action": "surrender",
+        "player_key": playerKey
+    });
+    if (!ffResponse.ok && ffResponse.error !== undefined) {
+        errorText = cFLetter(ffResponse.error.replace(/_/g, " "));
+        showError(`${errorText}`, e.clientX, e.clientY);
+        console.log(ffResponse);
+        errorText = null;
+    } else {
+        localStorage.clear();
+        location.reload();
+    }
+});
+
+
 
 
 
 //for testing
-lobby.classList.toggle("collapse");
+/* lobby.classList.toggle("collapse");
 startDiv.classList.toggle("collapse");
 
 startDiv.classList.toggle("collapse");
@@ -298,4 +391,6 @@ startDiv.classList.toggle("collapse");
     }
     moneyDiv.classList.toggle("collapse");
 loadHexMap();
-loadMoney();
+loadMoney(); */
+/* localStorage.clear();
+location.reload(); */
