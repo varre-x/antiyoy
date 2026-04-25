@@ -182,6 +182,7 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
                 btn.classList.toggle("collapse");
             };
             moneyDiv.classList.toggle("collapse");
+            container.classList.remove("collapse");
             loadHexMap();
             loadMoney();
             loadHexMapInterval = setInterval(loadHexMap, 2000);
@@ -190,6 +191,18 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
     });
 };
 
+//if 1 person starts all start
+if (joinBtn.classList.contains("collapse")) {
+    fetchData().then(data => {
+        if (data.phase === "playing") {
+            startDiv.classList.add("collapse");
+            lobby.classList.add("collapse");
+            moneyDiv.classList.remove("collapse");
+            ubBtns.classList.remove("collapse");
+            container.classList.remove("collapse");
+        }
+    });
+};
 
 //lobby buttons
 joinBtn.addEventListener("click", async (e) => {
@@ -236,6 +249,7 @@ startBtn.addEventListener("click", async (e) => {
     }
     loadMoney();
     loadHexMap();
+    container.classList.toggle("collapse");
     loadHexMapInterval = setInterval(loadHexMap, 2000);
     loadMoneyInterval = setInterval(loadMoney, 2000);
 });
@@ -377,6 +391,31 @@ ffBtn.addEventListener("click", async (e) => {
     }
 });
 
+async function winHandler() {
+    const data = await fetchData();
+    if (data.phase === "lobby") {
+        lobby.classList.remove("collapse");
+        moneyDiv.classList.add("collapse");
+        ubBtns.classList.add("collapse");
+        container.classList.add("collapse");
+        localStorage.clear();
+        location.reload();
+        return "ok";
+    } else {
+        return "no";
+    }
+
+};
+
+//win handling
+fetchData().then(data => {
+    if (data.phase === "playing") {
+        winInterval = setInterval(winHandler(), 2000)
+        if (winHandler().catch === "ok") {
+            clearInterval(winInterval);
+        }
+    }
+});
 
 
 
