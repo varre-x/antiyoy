@@ -6,7 +6,7 @@ body {
 
 #container {
     position: relative;
-    top: 110px;
+    top: 190px;
 }
 
 .hex, .building, .tree, .unit {
@@ -15,9 +15,73 @@ body {
     height: 60px;
 }
 
-.tree, .unit{
+.tree, .unit {
     pointer-events: none;
 }
+
+/*lobby*/
+#lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#nameField, #joinBtn, #startBtn {
+    width: fit-content;
+    height: 40px;
+    margin: 5px;
+    background-color: lightgray;
+    border: 2px solid black;
+    border-radius: 20px;
+    padding: 0px 10px;
+    font-size: large;
+}
+
+#joinBtn:hover, #startBtn:hover {
+    border-color: green;
+    cursor: pointer;
+}
+
+#startDiv {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#playerList {
+    list-style-type: none;
+    padding:6px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    border-radius: 20px;
+    font-size: large;
+    width: fit-content;
+}
+
+.playerListItem {
+    display: block;
+    text-align: center;
+    font-size: 20px;
+    padding:6px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin: 4px;
+    border: 2px solid black;
+    border-radius: 20px;
+    font-size: large;
+    background-color: lightgray;
+    
+}
+
 
 /*Money*/
 #moneyDiv {
@@ -32,6 +96,7 @@ body {
     top: 10px;
     text-align: center;
     display: block;
+    z-index: 10;
 }
 
 /*
@@ -79,6 +144,7 @@ body {
     top: 95px;
     left: 50%;
     transform: translateX(-50%);
+    z-index: 10;
 }
 
 .button {
@@ -170,7 +236,39 @@ body {
     height: auto;
     align-self: center;
 }
+/*error message*/
+.error-popup {
+    position: fixed;
+    transform: translate(-50%, -100%);
+    
+    background: darkslategray;
+    color: white;
+    font-size: 15px;
+    padding: 4px 8px;
+    border-radius: 20px;
 
+    pointer-events: none;
+    white-space: nowrap;
+
+    opacity: 0;
+    animation: floatUp 2.5s ease forwards;
+    z-index: 20;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -80%);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -100%);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -140%);
+    }
+}
 /* toggle classes */
 .collapse {
     visibility: collapse;

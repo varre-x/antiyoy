@@ -6,12 +6,40 @@ const nameField = document.getElementById("nameField");
 const joinBtn = document.getElementById("joinBtn");
 const startBtn = document.getElementById("startBtn");
 const endTurnBtn = document.getElementById("endTurnBtn");
+const moneyDiv = document.getElementById("moneyDiv");
 //unit and building buttons
 const ubBtns = document.getElementsByClassName("ubBtn");
-const moneyDiv = document.getElementById("moneyDiv");
 
 let playerKey = "6mfDmaq5Qhb2XJo0xcGShSJutmAIv-m9afLiGADbuEQ";
 let username = "ss";
+let selectedTool = null;
+let fromCol = null;
+let fromRow = null;
+
+const keyMap = {
+    "1": "farm",
+    "2": "tower",
+    "3": "fortress",
+    "4": "peasant",
+    "5": "spearman",
+    "6": "baron",
+    "7": "knight",
+};
+
+
+/*
+TO DO:
+- add player list to lobby ✅
+- save playerkey and name to localstorage
+- add surrender button
+- win comditions
+- scaling price for farms
+- highlight hexes that unit can move to
+- hightlight which color you are?
+- message popups for errors nt: not enough money, not your turn, etc ✅
+- ability to check everyones incomes by clicking on moneyDiv
+- click numbers to select farm, fortress or units insead of clicking the image ✅
+*/
 
 async function fetchData() {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
@@ -32,7 +60,6 @@ async function postData(data) {
     
     return result;
 }
-
 
 async function loadHexMap() {
     const data = await fetchData();
@@ -96,49 +123,82 @@ async function loadMoney() {
         };
     };
 };
+
+function showError(text, x, y) {
+    const el = document.createElement("div");
+    el.className = "error-popup";
+    el.textContent = text;
+
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+
+    document.body.appendChild(el);
+
+    setTimeout(() => {
+        el.remove();
+    }, 1000);
+}
+
 //setInterval(loadHexMap, 2000);
 
 //lobby buttons
-joinBtn.addEventListener("click", async () => {
+joinBtn.addEventListener("click", async (e) => {
     const playerName = nameField.value.trim();
     const data = await fetchData();
     if (playerName !== "") {
+        let player = document.createElement("li");
+        player.textContent = playerName;
+        player.classList.add("playerListItem");
+        playerList.appendChild(player);
+        
         lobby.classList.toggle("collapse");
         startDiv.classList.toggle("collapse");
         const joinResponse = await postData({
             "action": "join",
             "username": playerName
         });
+        if (!joinResponse.ok) {
+        showError(`${joinResponse.error}`, e.clientX, e.clientY);
+        console.log(joinResponse.error);
+        };
         playerKey = joinResponse.player_key;
         console.log(playerKey);
     }
 });
 
-startBtn.addEventListener("click", async () => {
+startBtn.addEventListener("click", async (e) => {
     startDiv.classList.toggle("collapse");
     endTurnBtn.classList.toggle("collapse");
     for (const btn of ubBtns) {
         btn.classList.toggle("collapse");
     }
     moneyDiv.classList.toggle("collapse");
-    await postData({
+    const startResponse = await postData({
         "action": "start"
     });
+    if (!startResponse.ok) {
+        showError(`${startResponse.error}`, e.clientX, e.clientY);
+        console.log(startResponse);
+    }
     loadMoney();
     loadHexMap();
 });
 
 //ingame buttons
-endTurnBtn.addEventListener("click", () => {
-    postData({
+endTurnBtn.addEventListener("click", async (e) => {
+    const endTurnResponse = await postData({
         "action": "end_turn",
         "player_key": playerKey
     });
+    if (!endTurnResponse.ok) {
+        showError(`${endTurnResponse.error}`, e.clientX, e.clientY);
+        console.log(endTurnResponse);
+    }
     loadMoney();
     loadHexMap();
 });
 
-let selectedTool = null;
+
 
 for (const btn of ubBtns) {
     btn.onclick = () => {
@@ -150,10 +210,20 @@ for (const btn of ubBtns) {
     };
 };
 
+document.addEventListener("keydown", (e) => {
+    const tool = keyMap[e.key]; 
+    if (!tool) return;
+    selectedTool = tool;
+    for (const btn of ubBtns) {
+        if (btn.dataset.tool === tool) {
+            btn.classList.add("selected");
+        } else {
+            btn.classList.remove("selected");
+        }
+    }
+});
 
-let fromCol = null;
-let fromRow = null;
-
+//hex clicking
 document.body.addEventListener("click", async (e) => {
     const hex = e.target.closest(".hex");
     if (!hex) return;
@@ -175,12 +245,17 @@ document.body.addEventListener("click", async (e) => {
         } else if (fromCol !== null && fromRow !== null) {
             const toCol = Number(hex.dataset.col);
             const toRow = Number(hex.dataset.row);
-            await postData({
+            const moveUnit = await postData({
                 "action": "move",
                 "player_key": playerKey,
                 "from": {"col": fromCol, "row": fromRow},
                 "to": {"col": toCol, "row": toRow}
             });
+            if (!moveUnit.ok) {
+                showError(`${moveUnit.error}`, e.clientX, e.clientY);
+                console.log(moveUnit);
+            };
+            loadMoney();
             loadHexMap();
             fromCol = null;
             fromRow = null;
@@ -189,12 +264,17 @@ document.body.addEventListener("click", async (e) => {
     } else {
         const col = Number(hex.dataset.col);
         const row = Number(hex.dataset.row);
-        console.log(await postData({
+        const buyResponse = await postData({
             "action": "buy",
             "player_key": playerKey,
             "type": selectedTool,
             "hex": {"col": col, "row": row}
-        }));
+        });
+        if (!buyResponse.ok) {
+            showError(`${buyResponse.error}`, e.clientX, e.clientY);
+            console.log(buyResponse);
+        }
+        
         for (const btn of ubBtns) {
             btn.classList.remove("selected");
         }
@@ -205,13 +285,17 @@ document.body.addEventListener("click", async (e) => {
 });
 
 
+
+
 //for testing
-loadMoney();
-loadHexMap();
+lobby.classList.toggle("collapse");
+startDiv.classList.toggle("collapse");
 
 startDiv.classList.toggle("collapse");
-endTurnBtn.classList.toggle("collapse");
-for (const btn of ubBtns) {
-    btn.classList.toggle("collapse");
-}
-moneyDiv.classList.toggle("collapse");   
+    endTurnBtn.classList.toggle("collapse");
+    for (const btn of ubBtns) {
+        btn.classList.toggle("collapse");
+    }
+    moneyDiv.classList.toggle("collapse");
+loadHexMap();
+loadMoney();
