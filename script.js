@@ -37,7 +37,8 @@ const keyMap = {
 
 /*
 TO DO:
-- add player list to lobby ✅ -- bug- when you join you can see other players
+- add player list to lobby ✅
+- bug - when you join you can see other players✅ 
 - save playerkey and name to localstorage
 - add surrender button
 - win comditions
@@ -58,11 +59,11 @@ async function fetchData() {
     return await response.json();
 }
 
-async function postData(datay) {
+async function postData(data) {
     const response = await fetch('https://tinkr.tech/sdb/antiyoy/antiyoyDB', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(datay)
+        body: JSON.stringify(data)
     });
     const result = await response.json();
     
@@ -71,7 +72,7 @@ async function postData(datay) {
 
 async function loadHexMap() {
     const data = await fetchData();
-    console.log(data);
+    /* console.log(data); */
     container.innerHTML = "";
     const tiles = data.map
 
