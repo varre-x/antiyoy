@@ -70,7 +70,7 @@ async function postData(data) {
 }
 
 async function loadHexMap() {
-    updateData();
+    const data = await fetchData();
     console.log(data);
     container.innerHTML = "";
     const tiles = data.map
@@ -169,14 +169,16 @@ function cFLetter(str) {
 checkStartInterval = setInterval(checkStart, 1000)
 
 function checkStart(){
-    if (data.phase === "playing") {
-        if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
-        if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
-        if(moneyDiv.classList.contains("collapse")){moneyDiv.classList.remove("collapse")};
-        if(ubBtns.classList.contains("collapse")){ubBtns.classList.remove("collapse")};
-        if(container.classList.contains("collapse")){container.classList.remove("collapse")};
-        clearInterval(checkStartInterval);
-    };
+    fetchData().then(data => {
+        if (data.phase === "playing") {
+            if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
+            if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
+            if(moneyDiv.classList.contains("collapse")){moneyDiv.classList.remove("collapse")};
+            if(ubBtns.classList.contains("collapse")){ubBtns.classList.remove("collapse")};
+            if(container.classList.contains("collapse")){container.classList.remove("collapse")};
+            clearInterval(checkStartInterval);
+        };
+    });
 };
 //remember player
 if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
@@ -389,15 +391,26 @@ ffBtn.addEventListener("click", async (e) => {
 });
 
 //win handling
+checkPlayingInterval = setInterval(checkPlaying, 1000)
+async function checkPlaying() {
+    const data = fetchData();
+    if (data.phase === "playing") {
+        clearInterval(checkPlayingInterval);
+        winHandlerInterval = setInterval(winHandler, 1000);
+        
+    };
+};
+
 async function winHandler() {
     const data = fetchData();
     if (data.phase === "lobby") {
-        container.classList.add("collapse");
-        localStorage.clear();
-        location.reload;
-    }
+        clearInterval(winHandlerInterval);
+        checkPlayingInterval = setInterval(checkPlaying, 1000)
+        
+    };
 };
-//setInterval(winHandler, 2000)
+
+
 
 //for testing
 /* lobby.classList.toggle("collapse");
