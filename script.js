@@ -16,7 +16,6 @@ const ubBtns = document.getElementsByClassName("ubBtn");
 
 let playerKey = null;
 let username = null;
-
 let selectedTool = null;
 let fromCol = null;
 let fromRow = null;
@@ -33,14 +32,12 @@ const keyMap = {
     "7": "knight",
 };
 
-
-
 /*
 TO DO:
 - add player list to lobby ✅
 - bug - when you join you can see other players✅ 
-- save playerkey and name to localstorage
-- add surrender button
+- save playerkey and name to localstorage✅ 
+- add surrender button✅ 
 - win comditions
 - scaling price for farms
 - highlight hexes that unit can move to?
@@ -73,7 +70,7 @@ async function postData(data) {
 }
 
 async function loadHexMap() {
-    const data = await fetchData();
+    updateData();
     console.log(data);
     container.innerHTML = "";
     const tiles = data.map
@@ -124,7 +121,7 @@ async function loadHexMap() {
 };
 
 async function loadMoney() {
-    const data = await fetchData();
+    updateData();
     let playerData = data.players;
     for (const player of playerData) {
         if (player.username === username) {
@@ -168,6 +165,19 @@ function cFLetter(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+//if 1 person starts all start
+checkStartInterval = setInterval(checkStart, 1000)
+
+function checkStart(){
+    if (data.phase === "playing") {
+        if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
+        if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
+        if(moneyDiv.classList.contains("collapse")){moneyDiv.classList.remove("collapse")};
+        if(ubBtns.classList.contains("collapse")){ubBtns.classList.remove("collapse")};
+        if(container.classList.contains("collapse")){container.classList.remove("collapse")};
+        clearInterval(checkStartInterval);
+    };
+};
 //remember player
 if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
     playerKey = localStorage.getItem("playerKey");
@@ -176,7 +186,7 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
     startDiv.classList.toggle("collapse");
     loadPlayerList();
 
-    fetchData().then(data => { 
+    fetchData().then(data => {
         if (data.phase === "playing") {
             startDiv.classList.toggle("collapse");
             endTurnBtn.classList.toggle("collapse");
@@ -189,27 +199,14 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
             loadMoney();
             loadHexMapInterval = setInterval(loadHexMap, 2000);
             loadMoneyInterval = setInterval(loadMoney, 2000);
+            clearInterval(checkStartInterval);
         };
-    });
-};
-
-//if 1 person starts all start
-if (joinBtn.classList.contains("collapse")) {
-    fetchData().then(data => {
-        if (data.phase === "playing") {
-            startDiv.classList.add("collapse");
-            lobby.classList.add("collapse");
-            moneyDiv.classList.remove("collapse");
-            ubBtns.classList.remove("collapse");
-            container.classList.remove("collapse");
-        }
     });
 };
 
 //lobby buttons
 joinBtn.addEventListener("click", async (e) => {
     const playerName = nameField.value.trim();
-    const data = await fetchData();
     if (playerName !== "") {
         const joinResponse = await postData({
             "action": "join",
@@ -271,8 +268,6 @@ endTurnBtn.addEventListener("click", async (e) => {
     loadMoney();
     loadHexMap();
 });
-
-
 
 for (const btn of ubBtns) {
     btn.onclick = () => {
@@ -393,17 +388,16 @@ ffBtn.addEventListener("click", async (e) => {
     }
 });
 
+//win handling
 async function winHandler() {
-    const data = await fetchData();
+    const data = fetchData();
     if (data.phase === "lobby") {
         container.classList.add("collapse");
         localStorage.clear();
         location.reload;
     }
 };
-
-//win handling
-setInterval(winHandler(), 2000)
+//setInterval(winHandler, 2000)
 
 //for testing
 /* lobby.classList.toggle("collapse");
