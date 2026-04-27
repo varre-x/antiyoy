@@ -37,8 +37,8 @@ TO DO:
 - add player list to lobby ✅
 - bug - when you join you can see other players✅ 
 - save playerkey and name to localstorage✅ 
-- add surrender button✅ 
-- win comditions
+- add surrender button ✅ 
+- win comditions ✅ 
 - scaling price for farms
 - highlight hexes that unit can move to?
 - hightlight which color you are?
@@ -121,7 +121,7 @@ async function loadHexMap() {
 };
 
 async function loadMoney() {
-    updateData();
+    const data = await fetchData();
     let playerData = data.players;
     for (const player of playerData) {
         if (player.username === username) {
@@ -166,19 +166,25 @@ function cFLetter(str) {
 }
 
 //if 1 person starts all start
-checkStartInterval = setInterval(checkStart, 1000)
-
-function checkStart(){
-    fetchData().then(data => {
-        if (data.phase === "playing") {
-            if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
-            if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
-            if(moneyDiv.classList.contains("collapse")){moneyDiv.classList.remove("collapse")};
-            if(ubBtns.classList.contains("collapse")){ubBtns.classList.remove("collapse")};
-            if(container.classList.contains("collapse")){container.classList.remove("collapse")};
+async function checkStart(){
+    const data = await fetchData();
+    if (data.phase === "playing") {
+        if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
+        if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
+        if(endTurnBtn.classList.contains("collapse")){endTurnBtn.classList.remove("collapse")};
+        if(moneyDiv.classList.contains("collapse")){moneyDiv.classList.remove("collapse")};
+        for (const btn of ubBtns) {
+            if(btn.classList.contains("collapse")){btn.classList.remove("collapse")};
+        }
+        if (container.classList.contains("collapse")) {
+            container.classList.remove("collapse");
+            loadHexMap();
+            loadMoney();
+            loadHexMapInterval = setInterval(loadHexMap, 2000);
+            loadMoneyInterval = setInterval(loadMoney, 2000);
             clearInterval(checkStartInterval);
-        };
-    });
+        }            
+    };
 };
 //remember player
 if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
@@ -199,9 +205,9 @@ if (localStorage.getItem("playerKey") && localStorage.getItem("username")) {
             container.classList.remove("collapse");
             loadHexMap();
             loadMoney();
+            container.classList.remove("collapse");
             loadHexMapInterval = setInterval(loadHexMap, 2000);
             loadMoneyInterval = setInterval(loadMoney, 2000);
-            clearInterval(checkStartInterval);
         };
     });
 };
@@ -220,25 +226,20 @@ joinBtn.addEventListener("click", async (e) => {
             console.log(joinResponse.error);
             errorText = null;
             return;
-        } else {
+        } else if (joinResponse.ok) {
             loadPlayerList();
             lobby.classList.toggle("collapse");
             startDiv.classList.toggle("collapse");
+            localStorage.setItem("playerKey", joinResponse.player_key);
+            localStorage.setItem("username", playerName);
+            playerKey = joinResponse.player_key;
+            username = playerName;
+            checkStartInterval = setInterval(checkStart, 1000)
         };
-        localStorage.setItem("playerKey", joinResponse.player_key);
-        localStorage.setItem("username", playerName);
-        playerKey = joinResponse.player_key;
-        username = playerName;
     }
 });
 
 startBtn.addEventListener("click", async (e) => {
-    startDiv.classList.toggle("collapse");
-    endTurnBtn.classList.toggle("collapse");
-    for (const btn of ubBtns) {
-        btn.classList.toggle("collapse");
-    }
-    moneyDiv.classList.toggle("collapse");
     const startResponse = await postData({
         "action": "start"
     });
@@ -247,12 +248,19 @@ startBtn.addEventListener("click", async (e) => {
         showError(`${errorText}`, e.clientX, e.clientY);
         console.log(startResponse);
         errorText = null;
-    }
-    loadMoney();
-    loadHexMap();
-    container.classList.remove("collapse");
-    loadHexMapInterval = setInterval(loadHexMap, 2000);
-    loadMoneyInterval = setInterval(loadMoney, 2000);
+    } else if (startResponse.ok) {
+        startDiv.classList.toggle("collapse");
+        endTurnBtn.classList.toggle("collapse");
+        for (const btn of ubBtns) {
+            btn.classList.toggle("collapse");
+        }
+        moneyDiv.classList.toggle("collapse");
+        loadMoney();
+        loadHexMap();
+        container.classList.remove("collapse");
+        loadHexMapInterval = setInterval(loadHexMap, 2000);
+        loadMoneyInterval = setInterval(loadMoney, 2000);
+    };
 });
 
 //ingame buttons
@@ -391,23 +399,38 @@ ffBtn.addEventListener("click", async (e) => {
 });
 
 //win handling
-checkPlayingInterval = setInterval(checkPlaying, 1000)
-async function checkPlaying() {
-    const data = fetchData();
-    if (data.phase === "playing") {
-        clearInterval(checkPlayingInterval);
-        winHandlerInterval = setInterval(winHandler, 1000);
-        
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+let winHandlerInterval = null;
+
+async function winHandler() {
+    const data = await fetchData();
+    checkTurn(data);
+    if (data.phase === "lobby") {
+        document.getElementById("winScreen").classList.toggle("collapse");
+        await wait(3000);
+        localStorage.clear();
+        location.reload();
     };
 };
 
-async function winHandler() {
-    const data = fetchData();
-    if (data.phase === "lobby") {
-        clearInterval(winHandlerInterval);
-        checkPlayingInterval = setInterval(checkPlaying, 1000)
-        
+async function checkPlaying() {
+    const data = await fetchData();
+    if (data.phase === "playing") {
+        winHandlerInterval = setInterval(winHandler, 2000);
+        clearInterval(checkPlayingInterval);
     };
+};
+checkPlayingInterval = setInterval(checkPlaying, 3000)
+
+async function checkTurn(data) {
+    if (data.current_player === username && !endTurnBtn.classList.contains("selected")){
+        endTurnBtn.classList.add("selected");
+    } else {
+        endTurnBtn.classList.remove("selected");
+    }
 };
 
 

@@ -46,6 +46,29 @@ body {
     text-align: center;
 }
 
+#winText {
+    font-size: 100px;
+    color: gold;
+    font-family: 'Fredoka', cursive;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    animation: winPop 0.6s ease-out;
+    z-index: 1001;
+}
+
+@keyframes winPop {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
 /*lobby*/
 #lobby {
     display: flex;
