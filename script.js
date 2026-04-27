@@ -168,7 +168,7 @@ function cFLetter(str) {
 //if 1 person starts all start
 async function checkStart(){
     const data = await fetchData();
-    if (data.phase === "playing") {
+    if (data.phase === "playing" && localStorage.getItem("playerKey")) {
         if(!startDiv.classList.contains("collapse")){startDiv.classList.add("collapse")};
         if(!lobby.classList.contains("collapse")){lobby.classList.add("collapse")};
         if(endTurnBtn.classList.contains("collapse")){endTurnBtn.classList.remove("collapse")};
