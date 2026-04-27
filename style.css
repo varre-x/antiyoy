@@ -46,6 +46,15 @@ body {
     text-align: center;
 }
 
+#yourTurn {
+    font-size: 100px;
+    color: lightgreen;
+    font-family: 'Fredoka', cursive;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    animation: winPop 0.6s ease-out;
+    z-index: 1001;
+}
+
 #winText {
     font-size: 100px;
     color: gold;

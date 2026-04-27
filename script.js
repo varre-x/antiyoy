@@ -427,8 +427,11 @@ checkPlayingInterval = setInterval(checkPlaying, 3000)
 
 async function checkTurn(data) {
     if (data.current_player === username && !endTurnBtn.classList.contains("selected")){
+        document.getElementById("yourTurn").classList.toggle("collapse");
+        await wait(1000);
+        document.getElementById("yourTurn").classList.toggle("collapse");
         endTurnBtn.classList.add("selected");
-    } else {
+    } else if(data.current_player !== username) {
         endTurnBtn.classList.remove("selected");
     }
 };
